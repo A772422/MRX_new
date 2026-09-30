@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>M.R.X.</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230b1220'/><text x='16' y='22' font-size='16' text-anchor='middle' fill='%2337e6ff' font-family='monospace' font-weight='bold'>MX</text></svg>">
+<link rel="stylesheet" href="/static/vendor/leaflet/leaflet.css">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header>
+  <div class="brand"><span class="dot" id="conn" title="connection"></span><b>M.R.X.</b><span class="sub" id="model"></span></div>
+  <div class="hdr-right">
+    <label class="sel" title="What M.R.X. may do without asking">Autonomy
+      <select id="autonomy"><option>strict</option><option selected>balanced</option><option>trusted</option></select></label>
+    <button id="btn-reset" title="Start a fresh conversation (memory is kept)">New chat</button>
+  </div>
+</header>
+
+<main>
+  <section id="chat-col">
+    <div id="chat" aria-live="polite"></div>
+    <div id="status"></div>
+    <form id="composer" autocomplete="off">
+      <button type="button" id="btn-mic" title="Speak (any language)">🎤</button>
+      <textarea id="input" rows="1" placeholder="Talk to M.R.X. in any language…" autofocus></textarea>
+      <button type="submit" id="btn-send">Send</button>
+      <button type="button" id="btn-stop" hidden>Stop</button>
+    </form>
+    <div class="voice-row">
+      <label>Voice input <select id="lang">
+        <option value="">Auto (browser)</option><option>en-US</option><option>en-GB</option><option>hi-IN</option><option>es-ES</option><option>fr-FR</option>
+        <option>de-DE</option><option>ar-SA</option><option>zh-CN</option><option>ja-JP</option><option>ko-KR</option><option>pt-BR</option><option>ru-RU</option>
+        <option>it-IT</option><option>tr-TR</option><option>bn-IN</option><option>ta-IN</option><option>te-IN</option><option>ur-PK</option><option>id-ID</option></select></label>
+      <label><input type="checkbox" id="tts"> Speak replies</label>
+    </div>
+  </section>
+
+  <section id="panel-col">
+    <nav id="tabs">
+      <button data-tab="map" class="on">Map</button><button data-tab="news">News</button><button data-tab="yt">YouTube</button>
+      <button data-tab="radar">Radar</button><button data-tab="browser">Browser</button><button data-tab="memory">Memory</button>
+    </nav>
+
+    <div class="tab on" id="tab-map">
+      <div class="toolbar" id="map-tools">
+        <button data-layer="quakes">Quakes</button><button data-layer="events">Nature</button><button data-layer="news">News</button>
+        <button data-layer="flights">Flights</button><button data-layer="rain">Rain radar</button><button id="btn-locate">Locate me</button>
+        <span id="map-msg" class="muted"></span>
+      </div>
+      <div id="map"></div>
+    </div>
+
+    <div class="tab" id="tab-news">
+      <div class="toolbar">
+        <select id="news-topic"><option>world</option><option>technology</option><option>business</option><option>science</option><option>sports</option><option>health</option></select>
+        <select id="news-lang"><option value="en">English</option><option value="de">Deutsch</option><option value="fr">Français</option><option value="es">Español</option>
+          <option value="ar">العربية</option><option value="hi">हिन्दी</option><option value="ja">日本語</option><option value="zh">中文</option><option value="ru">Русский</option><option value="pt">Português</option></select>
+        <button id="news-refresh">Refresh</button><span id="news-title" class="muted"></span>
+      </div>
+      <ul id="news-list" class="cards"></ul>
+    </div>
+
+    <div class="tab" id="tab-yt">
+      <div class="toolbar"><input id="yt-q" placeholder="Search YouTube or paste a link"><button id="yt-go">Play</button></div>
+      <div id="yt-wrap"><div id="yt-player"></div><div id="yt-empty" class="muted">Ask M.R.X. to play something, or search above.</div></div>
+      <div id="yt-msg" class="muted"></div>
+      <ul id="yt-results" class="cards"></ul>
+      <div class="muted small">Queue: <span id="yt-queue-n">0</span></div>
+    </div>
+
+    <div class="tab" id="tab-radar">
+      <div class="toolbar"><button id="radar-scan">Scan now</button><label><input type="checkbox" id="radar-live"> Live</label>
+        <span id="radar-info" class="muted"></span></div>
+      <div id="radar-grid">
+        <canvas id="radar-canvas" width="520" height="520"></canvas>
+        <div id="radar-side"><ul id="radar-list" class="cards"></ul><div id="radar-detail"></div></div>
+      </div>
+    </div>
+
+    <div class="tab" id="tab-browser">
+      <div class="toolbar"><span id="br-url" class="muted">No page yet — ask M.R.X. to open something.</span></div>
+      <img id="br-frame" alt="Live view of M.R.X.'s browser" hidden>
+    </div>
+
+    <div class="tab" id="tab-memory">
+      <div class="toolbar"><button id="mem-refresh">Refresh</button><span class="muted">Long-term memory M.R.X. keeps about you</span></div>
+      <ul id="mem-list" class="cards"></ul>
+    </div>
+  </section>
+</main>
+
+<div id="confirm" hidden>
+  <div class="box">
+    <div class="risk" id="cf-risk"></div>
+    <h3 id="cf-title">Approve action?</h3>
+    <pre id="cf-desc"></pre>
+    <div class="muted small" id="cf-timer"></div>
+    <div class="btns"><button id="cf-deny">Deny</button><button id="cf-ok" class="primary">Approve</button></div>
+  </div>
+</div>
+<div id="toasts"></div>
+
+<script src="/static/vendor/leaflet/leaflet.js"></script>
+<script src="/static/app.js"></script>
+<script src="https://www.youtube.com/iframe_api" async></script>
+</body>
+</html>

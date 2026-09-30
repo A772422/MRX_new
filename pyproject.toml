@@ -1,0 +1,33 @@
+[project]
+name = "mrx"
+version = "0.1.0"
+description = "M.R.X. - a real-time personal agent with system, browser, file, mail, news, map and network-radar control"
+requires-python = ">=3.10"
+dependencies = [
+    "anthropic>=1.9",
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.29",
+    "httpx>=0.27",
+    "feedparser>=6.0",
+    "psutil>=5.9",
+    "python-dotenv>=1.0",
+    "playwright>=1.44",
+]
+
+[project.optional-dependencies]
+desktop = ["pyautogui>=0.9", "pillow>=10"]     # mouse/keyboard/screen automation
+mdns = ["zeroconf>=0.130"]                       # richer device names on the radar
+dev = ["pytest>=8", "pytest-asyncio>=0.23"]
+
+[project.scripts]
+mrx = "mrx.main:main"
+
+[tool.setuptools.packages.find]
+include = ["mrx*"]
+
+[tool.setuptools.package-data]
+mrx = ["web/**/*", "data/*"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
